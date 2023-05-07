@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # This file is auto-generated from the current state of the database. Instead
 # of editing this file, please use the migrations feature of Active Record to
 # incrementally modify your database, and then regenerate this schema definition.
@@ -12,26 +10,28 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20_230_507_093_653) do
+ActiveRecord::Schema.define(version: 2023_05_07_104629) do
+
   # These are extensions that must be enabled in order to support this database
-  enable_extension 'plpgsql'
+  enable_extension "plpgsql"
 
-  create_table 'free_days', force: :cascade do |t|
-    t.date 'date'
-    t.string 'type'
-    t.string 'free_days_container_type', null: false
-    t.bigint 'free_days_container_id', null: false
-    t.datetime 'created_at', precision: 6, null: false
-    t.datetime 'updated_at', precision: 6, null: false
-    t.index %w[free_days_container_type free_days_container_id], name: 'index_free_days_on_free_days_container'
+  create_table "free_days", force: :cascade do |t|
+    t.date "date"
+    t.string "free_day_type"
+    t.string "free_days_container_type", null: false
+    t.bigint "free_days_container_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["free_days_container_type", "free_days_container_id"], name: "index_free_days_on_free_days_container"
   end
 
-  create_table 'planning_sessions', force: :cascade do |t|
-    t.integer 'available_free_days', null: false
-    t.integer 'year', null: false
-    t.integer 'available_overlapping_plannifications', null: false
-    t.datetime 'created_at', precision: 6, null: false
-    t.datetime 'updated_at', precision: 6, null: false
-    t.index ['year'], name: 'index_planning_sessions_on_year'
+  create_table "planning_sessions", force: :cascade do |t|
+    t.integer "available_free_days", null: false
+    t.integer "year", null: false
+    t.integer "available_overlapping_plannings", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["year"], name: "index_planning_sessions_on_year"
   end
+
 end

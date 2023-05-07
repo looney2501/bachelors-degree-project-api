@@ -12,12 +12,12 @@ end
 #
 # Table name: planning_sessions
 #
-#  id                                    :bigint           not null, primary key
-#  available_free_days                   :integer          not null
-#  available_overlapping_plannifications :integer          not null
-#  year                                  :integer          not null
-#  created_at                            :datetime         not null
-#  updated_at                            :datetime         not null
+#  id                              :bigint           not null, primary key
+#  available_free_days             :integer          not null
+#  available_overlapping_plannings :integer          not null
+#  year                            :integer          not null
+#  created_at                      :datetime         not null
+#  updated_at                      :datetime         not null
 #
 # Indexes
 #
