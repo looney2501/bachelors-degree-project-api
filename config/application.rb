@@ -22,6 +22,5 @@ module BachelorsDegreeProjectApi
     # config.eager_load_paths << Rails.root.join("extras")
 
     config.api_only = true
-
   end
 end

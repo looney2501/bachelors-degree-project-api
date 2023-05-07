@@ -1,0 +1,21 @@
+one:
+  available_free_days: 1
+  year: 1
+  available_overlapping_plannifications: 1
+
+two:
+  available_free_days: 1
+  year: 1
+  available_overlapping_plannifications: 1
+
+# == Schema Information
+#
+# Table name: planning_sessions
+#
+#  id                                    :bigint           not null, primary key
+#  available_free_days                   :integer
+#  available_overlapping_plannifications :integer
+#  year                                  :integer
+#  created_at                            :datetime         not null
+#  updated_at                            :datetime         not null
+#
