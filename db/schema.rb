@@ -12,15 +12,26 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20_230_507_093_158) do
+ActiveRecord::Schema.define(version: 20_230_507_093_653) do
   # These are extensions that must be enabled in order to support this database
   enable_extension 'plpgsql'
 
-  create_table 'planning_sessions', force: :cascade do |t|
-    t.integer 'available_free_days'
-    t.integer 'year'
-    t.integer 'available_overlapping_plannifications'
+  create_table 'free_days', force: :cascade do |t|
+    t.date 'date'
+    t.string 'type'
+    t.string 'free_days_container_type', null: false
+    t.bigint 'free_days_container_id', null: false
     t.datetime 'created_at', precision: 6, null: false
     t.datetime 'updated_at', precision: 6, null: false
+    t.index %w[free_days_container_type free_days_container_id], name: 'index_free_days_on_free_days_container'
+  end
+
+  create_table 'planning_sessions', force: :cascade do |t|
+    t.integer 'available_free_days', null: false
+    t.integer 'year', null: false
+    t.integer 'available_overlapping_plannifications', null: false
+    t.datetime 'created_at', precision: 6, null: false
+    t.datetime 'updated_at', precision: 6, null: false
+    t.index ['year'], name: 'index_planning_sessions_on_year'
   end
 end

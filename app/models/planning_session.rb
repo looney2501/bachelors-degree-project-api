@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 class PlanningSession < ApplicationRecord
+  include FreeDaysContainer
 end
 
 # == Schema Information
@@ -8,9 +9,13 @@ end
 # Table name: planning_sessions
 #
 #  id                                    :bigint           not null, primary key
-#  available_free_days                   :integer
-#  available_overlapping_plannifications :integer
-#  year                                  :integer
+#  available_free_days                   :integer          not null
+#  available_overlapping_plannifications :integer          not null
+#  year                                  :integer          not null
 #  created_at                            :datetime         not null
 #  updated_at                            :datetime         not null
+#
+# Indexes
+#
+#  index_planning_sessions_on_year  (year)
 #
