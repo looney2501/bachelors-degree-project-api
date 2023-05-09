@@ -92,6 +92,7 @@ GEM
     ffi (1.15.5-x64-mingw32)
     globalid (1.1.0)
       activesupport (>= 5.0)
+    holidays (8.6.0)
     i18n (1.13.0)
       concurrent-ruby (~> 1.0)
     jbuilder (2.11.5)
@@ -242,6 +243,7 @@ DEPENDENCIES
   byebug
   capybara (>= 3.26)
   dotenv-rails
+  holidays
   jbuilder (~> 2.7)
   pg (~> 1.1)
   puma (~> 5.0)
