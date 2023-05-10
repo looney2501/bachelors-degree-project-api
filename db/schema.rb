@@ -72,6 +72,7 @@ ActiveRecord::Schema.define(version: 2023_05_10_190335) do
     t.bigint "planning_session_id"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.index ["planning_session_id", "user_id"], name: "index_vacation_requests_on_planning_session_id_and_user_id", unique: true
     t.index ["planning_session_id"], name: "index_vacation_requests_on_planning_session_id"
     t.index ["user_id"], name: "index_vacation_requests_on_user_id"
   end
