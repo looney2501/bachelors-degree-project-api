@@ -4,6 +4,9 @@ class PlanningSessionsController < ApplicationController
   def create
     @planning_session = PlanningSession.create!(planning_session_params)
 
+    restriction_intervals = params[:restriction_intervals].map { |ri| RestrictionInterval.new(restriction_interval_params(ri)) }
+    @planning_session.restriction_intervals << restriction_intervals
+
     @planning_session.free_days << generate_weekend_days
     @planning_session.free_days << generate_national_free_days
 
@@ -14,6 +17,10 @@ class PlanningSessionsController < ApplicationController
 
   def planning_session_params
     params.require(:planning_session).permit(:year, :available_free_days)
+  end
+
+  def restriction_interval_params(ri)
+    ri.permit(:start_date, :end_date, :available_overlapping_plannings)
   end
 
   def generate_weekend_days
