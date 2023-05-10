@@ -2,6 +2,8 @@
 
 class PlanningSession < ApplicationRecord
   include FreeDaysContainer
+
+  has_many :restriction_intervals, dependent: :destroy
 end
 
 # == Schema Information
