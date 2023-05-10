@@ -13,7 +13,7 @@ class PlanningSessionsController < ApplicationController
   private
 
   def planning_session_params
-    params.require(:planning_session).permit(:year, :available_free_days, :available_overlapping_plannings)
+    params.require(:planning_session).permit(:year, :available_free_days)
   end
 
   def generate_weekend_days
