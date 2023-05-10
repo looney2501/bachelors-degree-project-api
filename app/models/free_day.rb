@@ -6,7 +6,7 @@ class FreeDay < ApplicationRecord
   enum free_day_type: {
     weekend: 'weekend',
     national: 'national',
-    planned: 'planned'
+    requested: 'requested'
   }
 end
 

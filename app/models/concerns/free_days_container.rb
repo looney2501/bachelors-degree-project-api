@@ -17,8 +17,8 @@ module FreeDaysContainer
              as: :free_days_container,
              dependent: :destroy,
              foreign_key: :free_days_container_id
-    has_many :planned_free_days,
-             -> { planned },
+    has_many :requested_free_days,
+             -> { requested },
              class_name: 'FreeDay',
              as: :free_days_container,
              dependent: :destroy,
