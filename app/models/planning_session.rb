@@ -47,7 +47,6 @@ class PlanningSession < ApplicationRecord
 
     nonoverlapping_free_days
   end
-
 end
 
 # == Schema Information
