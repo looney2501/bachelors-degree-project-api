@@ -42,32 +42,54 @@ class PlanningSessionsController < ApplicationController
   private
 
   def create_vacations_schedule
-    monthly_free_days = @planning_session.monthly_free_days
     year = @planning_session.year
 
     until @requests_queue.empty?
       request = @requests_queue.pop
 
       vacation = Vacation.create!(planning_session_id: request.planning_session_id, user_id: request.user_id)
+      vacation_free_days = []
+
+      default_free_days = @planning_session.nonoverlapping_free_days
+      total_free_days_no = default_free_days.length + @planning_session.available_free_days
+      days_per_month = total_free_days_no / 12
 
       # Add free days for every month
       12.times do |month_no|
-        vacation.planned_free_days << begin
-          start_date = Date.new(year, month_no + 1, 1).beginning_of_month
+        default_free_days_month = default_free_days.select { |dfd| dfd.date.month == month_no + 1 }
 
-          (start_date..start_date + (monthly_free_days[:min_days_months][:no_days] - 1)).map do |date|
-            FreeDay.new(date: date, free_day_type: 'planned')
+        # Add default free days (national + weekend)
+        vacation_free_days.concat(default_free_days_month.map do |dfd|
+          FreeDay.new(date: dfd.date, free_day_type: dfd.free_day_type, free_days_container_type: 'Vacation', free_days_container_id: vacation.id)
+        end)
+        # Add rest of days
+        remaining_days = days_per_month - default_free_days_month.length
+        current_date = Date.new(year, month_no + 1, 1)
+
+        while remaining_days.positive?
+          unless default_free_days_month.any? { |dfd| dfd.date == current_date }
+            vacation_free_days << FreeDay.new(date: current_date, free_day_type: 'planned', free_days_container_type: 'Vacation', free_days_container_id: vacation.id)
+            remaining_days -= 1
           end
+          current_date = current_date.next_day
         end
       end
 
-      # Add remainder free days
-      monthly_free_days[:max_days_months][:no_months].times do |month_no|
-        vacation.planned_free_days << FreeDay.new(
-          date: Date.new(year, month_no + 1, monthly_free_days[:max_days_months][:no_days]),
-          free_day_type: 'planned'
-        )
+      remaining_days_per_month = total_free_days_no - vacation_free_days.count
+
+      # Add remaining free days
+      12.times do |month_no|
+        break unless remaining_days_per_month.positive?
+
+        current_date = Date.new(year, month_no + 1, 1)
+
+        current_date = current_date.next_day while vacation_free_days.any? { |fd| fd.date == current_date }
+
+        vacation_free_days << FreeDay.new(date: current_date, free_day_type: 'planned', free_days_container_type: 'Vacation', free_days_container_id: vacation.id)
+        remaining_days_per_month -= 1
       end
+
+      vacation_free_days.each(&:save)
 
       @solution << vacation
     end
