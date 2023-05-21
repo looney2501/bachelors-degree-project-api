@@ -2,6 +2,7 @@
 
 class PlanningSessionsController < ApplicationController
   include Containers
+  before_action :authenticate_user!
 
   def create
     @planning_session = PlanningSession.create!(planning_session_params)
@@ -47,7 +48,7 @@ class PlanningSessionsController < ApplicationController
     until @requests_queue.empty?
       request = @requests_queue.pop
 
-      vacation = Vacation.create!(planning_session_id: request.planning_session_id, user_id: request.user_id)
+      vacation = Vacation.create!(planning_session_id: request.planning_session_id, user_id: current_user.id)
       vacation_free_days = []
 
       default_free_days = @planning_session.nonoverlapping_free_days
