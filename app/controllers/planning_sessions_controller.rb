@@ -4,12 +4,14 @@ class PlanningSessionsController < ApplicationController
   include Containers
   before_action :authenticate_user!
 
-  def show
-    # case params['mode']
-    # when 'years'
-    #   years = PlanningSession
-    #   render json:
-    # end
+  def index
+    case params['mode']
+    when 'years'
+      years = PlanningSession.order(year: :desc).pluck(:year)
+      render json: { years: years }, status: :ok
+    else
+      render json: {}, status: :ok
+    end
   end
 
   def create
@@ -21,7 +23,7 @@ class PlanningSessionsController < ApplicationController
     @planning_session.free_days << generate_weekend_days
     @planning_session.free_days << generate_national_free_days
 
-    render json: { message: 'Created!' }, status: :ok
+    render json: { message: 'Created!' }, status: :created
   end
 
   def generate_vacations_schedule
