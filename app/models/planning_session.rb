@@ -30,5 +30,5 @@ end
 #
 # Indexes
 #
-#  index_planning_sessions_on_year  (year)
+#  index_planning_sessions_on_year  (year) UNIQUE
 #

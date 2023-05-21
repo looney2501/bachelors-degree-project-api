@@ -4,6 +4,14 @@ class PlanningSessionsController < ApplicationController
   include Containers
   before_action :authenticate_user!
 
+  def show
+    # case params['mode']
+    # when 'years'
+    #   years = PlanningSession
+    #   render json:
+    # end
+  end
+
   def create
     @planning_session = PlanningSession.create!(planning_session_params)
 
