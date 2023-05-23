@@ -29,9 +29,11 @@ class PlanningSessionsController < ApplicationController
   def all_vacations_by_year
     @planning_session = PlanningSession.find_by(year: params[:year])
 
-    return unless @planning_session
-
-    render json: { planning_session: serialize(@planning_session, serializer: PlanningSessionAllVacationsSerializer) }
+    if @planning_session
+      render json: { planning_session: serialize(@planning_session, serializer: PlanningSessionAllVacationsSerializer) }
+    else
+      render json: { errors: 'Planning Session Not Found!' }, status: :not_found
+    end
   end
 
   def generate_vacations_schedule
