@@ -32,7 +32,7 @@ class PlanningSessionsController < ApplicationController
     if @planning_session
       render json: { planning_session: serialize(@planning_session, serializer: PlanningSessionAllVacationsSerializer) }
     else
-      render json: { errors: 'Planning Session Not Found!' }, status: :not_found
+      render json: { error: 'Planning Session Not Found!' }, status: :not_found
     end
   end
 
