@@ -26,6 +26,14 @@ class PlanningSessionsController < ApplicationController
     render json: { message: 'Created!' }, status: :created
   end
 
+  def all_vacations_by_year
+    @planning_session = PlanningSession.find_by(year: params[:year])
+
+    return unless @planning_session
+
+    render json: { planning_session: serialize(@planning_session, serializer: PlanningSessionAllVacationsSerializer) }
+  end
+
   def generate_vacations_schedule
     @planning_session = PlanningSession.find(params[:id])
 

@@ -6,6 +6,7 @@ Rails.application.routes.draw do
 
   resources :planning_sessions, only: %i[create index] do
     post :generate_vacations_schedule, on: :member
+    get :all_vacations_by_year, on: :collection
   end
   resources :vacation_requests, only: %i[create]
 end
