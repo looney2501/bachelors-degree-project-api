@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
 class PlanningSessionAllVacationsSerializer < RootSerializer
-  attributes :id, :available_free_days, :year, :default_free_days, :vacations
+  attributes :id, :national_free_days, :year, :vacations
 
-  def default_free_days
-    serialize(object.nonoverlapping_free_days, each_serializer: FreeDaySerializer)
+  def national_free_days
+    serialize(object.national_free_days, each_serializer: FreeDaySerializer)
   end
 
   def vacations
