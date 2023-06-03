@@ -8,6 +8,6 @@ class ApplicationController < ActionController::API
 
   def configure_permitted_parameters
     # for user account creation i.e sign up
-    devise_parameter_sanitizer.permit(:sign_in, keys: [:first_name, :email, :type])
+    devise_parameter_sanitizer.permit(:sign_up, keys: [:type])
   end
 end

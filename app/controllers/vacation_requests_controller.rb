@@ -7,8 +7,8 @@ class VacationRequestsController < ApplicationController
   def create
     @vacation_request = VacationRequest.create!(vacation_request_params.merge({ user_id: current_user.id }))
 
-    params[:intervals].length.times do |i|
-      @vacation_request.free_days << (params[:intervals][i][:start_date]..params[:intervals][i][:end_date]).map do |d|
+    params[:preferred_intervals].length.times do |i|
+      @vacation_request.free_days << (params[:preferred_intervals][i][:start_date]..params[:preferred_intervals][i][:end_date]).map do |d|
         FreeDay.new(date: d, free_day_type: :requested)
       end
     end

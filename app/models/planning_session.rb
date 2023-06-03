@@ -24,6 +24,7 @@ end
 #
 #  id                  :bigint           not null, primary key
 #  available_free_days :integer          not null
+#  status              :string           default("created")
 #  year                :integer          not null
 #  created_at          :datetime         not null
 #  updated_at          :datetime         not null

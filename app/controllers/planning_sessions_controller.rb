@@ -10,6 +10,13 @@ class PlanningSessionsController < ApplicationController
     when 'years'
       years = PlanningSession.order(year: :desc).pluck(:year)
       render json: { years: years }, status: :ok
+    when 'single_thin_details'
+      @planning_session = PlanningSession.find_by(year: params[:year])
+      has_requested = @planning_session.vacation_requests.where(user_id: current_user.id).count.positive?
+      render json: {
+        planning_session: serialize(@planning_session, serializer: PlanningSessionThinSerializer),
+        has_requested: has_requested
+      }, status: :created
     else
       render json: {}, status: :ok
     end
@@ -24,14 +31,16 @@ class PlanningSessionsController < ApplicationController
     @planning_session.free_days << generate_weekend_days
     @planning_session.free_days << generate_national_free_days
 
-    render json: { message: 'Created!' }, status: :created
+    render json: { planning_session: serialize(@planning_session, serializer: PlanningSessionAllVacationsSerializer) }, status: :created
   end
 
   def all_vacations_by_year
+    search_params = { year: params[:year] }
+    search_params.merge({ user_id: current_user.id }) if current_user.type == 'Employee'
     @planning_session = PlanningSession.find_by(year: params[:year])
 
     if @planning_session
-      render json: { planning_session: serialize(@planning_session, serializer: PlanningSessionAllVacationsSerializer) }
+      render json: { planning_session: serialize(@planning_session, serializer: PlanningSessionAllVacationsSerializer) }, status: :ok
     else
       render json: { error: 'Planning Session Not Found!' }, status: :not_found
     end

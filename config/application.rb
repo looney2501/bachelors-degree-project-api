@@ -22,5 +22,6 @@ module BachelorsDegreeProjectApi
     # config.eager_load_paths << Rails.root.join("extras")
 
     config.api_only = true
+    config.action_dispatch.rescue_responses.merge!('CanCan::AccessDenied' => :unauthorized)
   end
 end
