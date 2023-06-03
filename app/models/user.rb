@@ -9,6 +9,10 @@ class User < ActiveRecord::Base
   include DeviseTokenAuth::Concerns::User
 
   has_many :vacation_requests, dependent: :destroy
+
+  def as_json(options = {})
+    super(options).merge({ type: type })
+  end
 end
 
 # == Schema Information
