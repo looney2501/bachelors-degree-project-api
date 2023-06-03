@@ -3,6 +3,7 @@
 class PlanningSessionsController < ApplicationController
   include Containers
   before_action :authenticate_user!
+  authorize_resource
 
   def index
     case params['mode']

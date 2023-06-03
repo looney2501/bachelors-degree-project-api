@@ -2,6 +2,7 @@
 
 class VacationRequestsController < ApplicationController
   before_action :authenticate_user!
+  authorize_resource
 
   def create
     @vacation_request = VacationRequest.create!(vacation_request_params.merge({ user_id: current_user.id }))
