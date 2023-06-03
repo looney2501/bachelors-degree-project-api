@@ -5,6 +5,8 @@ class VacationRequest < ApplicationRecord
 
   belongs_to :user
   belongs_to :planning_session
+
+  has_many :requested_intervals, dependent: :destroy
 end
 
 # == Schema Information

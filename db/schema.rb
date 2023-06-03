@@ -12,7 +12,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20_230_603_075_842) do
+ActiveRecord::Schema.define(version: 20_230_603_085_426) do
   # These are extensions that must be enabled in order to support this database
   enable_extension 'plpgsql'
 
@@ -26,22 +26,26 @@ ActiveRecord::Schema.define(version: 20_230_603_075_842) do
     t.index %w[free_days_container_type free_days_container_id], name: 'index_free_days_on_free_days_container'
   end
 
+  create_table 'intervals', force: :cascade do |t|
+    t.date 'start_date'
+    t.date 'end_date'
+    t.string 'type'
+    t.integer 'importance_level'
+    t.integer 'available_overlapping_plannings'
+    t.bigint 'planning_session_id'
+    t.bigint 'vacation_request_id'
+    t.datetime 'created_at', precision: 6, null: false
+    t.datetime 'updated_at', precision: 6, null: false
+    t.index ['planning_session_id'], name: 'index_intervals_on_planning_session_id'
+    t.index ['vacation_request_id'], name: 'index_intervals_on_vacation_request_id'
+  end
+
   create_table 'planning_sessions', force: :cascade do |t|
     t.integer 'available_free_days', null: false
     t.integer 'year', null: false
     t.datetime 'created_at', precision: 6, null: false
     t.datetime 'updated_at', precision: 6, null: false
     t.index ['year'], name: 'index_planning_sessions_on_year', unique: true
-  end
-
-  create_table 'restriction_intervals', force: :cascade do |t|
-    t.date 'start_date', null: false
-    t.date 'end_date', null: false
-    t.integer 'available_overlapping_plannings'
-    t.bigint 'planning_session_id'
-    t.datetime 'created_at', precision: 6, null: false
-    t.datetime 'updated_at', precision: 6, null: false
-    t.index ['planning_session_id'], name: 'index_restriction_intervals_on_planning_session_id'
   end
 
   create_table 'users', force: :cascade do |t|
