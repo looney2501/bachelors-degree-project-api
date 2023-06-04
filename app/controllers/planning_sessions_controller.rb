@@ -67,7 +67,7 @@ class PlanningSessionsController < ApplicationController
 
     create_vacations_schedule
 
-    render json: { vacations: @solution }, status: :ok
+    render json: { planning_session: serialize(@planning_session, serializer: PlanningSessionAllVacationsSerializer) }, status: :ok
   end
 
   private
