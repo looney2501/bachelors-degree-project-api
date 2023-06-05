@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class FreeDaySerializer < RootSerializer
-  attributes :id, :date, :free_day_type
+  attributes :id, :date, :free_day_type, :name
 end
 
 # == Schema Information
@@ -12,6 +12,7 @@ end
 #  date                     :date
 #  free_day_type            :string
 #  free_days_container_type :string           not null
+#  name                     :string
 #  created_at               :datetime         not null
 #  updated_at               :datetime         not null
 #  free_days_container_id   :bigint           not null

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2023_06_03_180307) do
+ActiveRecord::Schema.define(version: 2023_06_05_172004) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -22,6 +22,7 @@ ActiveRecord::Schema.define(version: 2023_06_03_180307) do
     t.bigint "free_days_container_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.string "name"
     t.index ["free_days_container_type", "free_days_container_id"], name: "index_free_days_on_free_days_container"
   end
 

@@ -151,7 +151,7 @@ class PlanningSessionsController < ApplicationController
   def generate_national_free_days
     year = @planning_session.year
     Holidays.between(Date.new(year, 1, 1), Date.new(year, 12, 31), :ro).map do |holiday|
-      FreeDay.new(date: holiday[:date], free_day_type: :national)
+      FreeDay.new(date: holiday[:date], free_day_type: :national, name: holiday[:name])
     end
   end
 end
