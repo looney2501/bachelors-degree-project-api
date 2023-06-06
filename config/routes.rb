@@ -9,4 +9,5 @@ Rails.application.routes.draw do
     get :all_vacations_by_year, on: :collection
   end
   resources :vacation_requests, only: %i[create]
+  resources :users, only: %i[update]
 end

@@ -6,6 +6,7 @@ class Ability
   def initialize(user)
     return unless user.present?
 
+    can :manage, User
     can :manage, VacationRequest
     can :read, PlanningSession
 

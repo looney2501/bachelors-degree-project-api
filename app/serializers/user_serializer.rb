@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class UserSerializer < RootSerializer
-  attributes :first_name, :last_name, :email, :type
+  attributes :id, :first_name, :last_name, :role, :phone_number, :type, :email
 end
 
 # == Schema Information
@@ -17,10 +17,12 @@ end
 #  encrypted_password     :string           default(""), not null
 #  first_name             :string
 #  last_name              :string
+#  phone_number           :string
 #  provider               :string           default("email"), not null
 #  remember_created_at    :datetime
 #  reset_password_sent_at :datetime
 #  reset_password_token   :string
+#  role                   :string
 #  tokens                 :json
 #  type                   :string
 #  uid                    :string           default(""), not null

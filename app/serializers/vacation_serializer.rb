@@ -4,7 +4,7 @@ class VacationSerializer < RootSerializer
   attributes :user, :free_days
 
   def user
-    serialize(object.user, serializer: UserSerializer)
+    serialize(object.user, serializer: UserThinSerializer)
   end
 
   def free_days

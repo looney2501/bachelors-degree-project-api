@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
-class Employee < User
+class UserThinSerializer < RootSerializer
+  attributes :first_name, :last_name
 end
 
 # == Schema Information
