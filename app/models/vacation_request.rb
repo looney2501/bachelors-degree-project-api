@@ -7,6 +7,16 @@ class VacationRequest < ApplicationRecord
   belongs_to :planning_session
 
   has_many :requested_intervals, dependent: :destroy
+
+  attr_accessor :score
+
+  def initial_score
+    requested_intervals.reduce(1) do |total_score, requested_interval|
+      interval_score = requested_interval.importance_level * planning_session.count_days_not_free(requested_interval.start_date, requested_interval.end_date)
+
+      total_score + interval_score
+    end
+  end
 end
 
 # == Schema Information

@@ -5,6 +5,21 @@ class Vacation < ApplicationRecord
 
   belongs_to :user
   belongs_to :planning_session
+
+  after_save :save_prepared_free_days
+
+  attr_accessor :prepared_free_days
+
+  def initialize(attributes = {}, _options = {})
+    super(attributes)
+    @prepared_free_days = []
+  end
+
+  def save_prepared_free_days
+    return if prepared_free_days.blank?
+
+    prepared_free_days.each { |free_day_date| FreeDay.create!(date: free_day_date, free_day_type: :planned, free_days_container_type: 'Vacation', free_days_container_id: id) }
+  end
 end
 
 # == Schema Information

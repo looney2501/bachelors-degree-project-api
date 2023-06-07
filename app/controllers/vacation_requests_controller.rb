@@ -7,11 +7,8 @@ class VacationRequestsController < ApplicationController
   def create
     @vacation_request = VacationRequest.create!(vacation_request_params.merge({ user_id: current_user.id }))
 
-    params[:preferred_intervals].length.times do |i|
-      @vacation_request.free_days << (params[:preferred_intervals][i][:start_date]..params[:preferred_intervals][i][:end_date]).map do |d|
-        FreeDay.new(date: d, free_day_type: :requested)
-      end
-    end
+    requested_intervals = params[:requested_intervals].map { |ri| RequestedInterval.new(requested_interval_params(ri)) }
+    @vacation_request.requested_intervals << requested_intervals
 
     render json: { message: 'Created!' }, status: :ok
   end
@@ -20,5 +17,9 @@ class VacationRequestsController < ApplicationController
 
   def vacation_request_params
     params.require(:vacation_request).permit(:planning_session_id)
+  end
+
+  def requested_interval_params(ri)
+    ri.permit(:start_date, :end_date, :importance_level)
   end
 end
