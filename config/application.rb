@@ -20,7 +20,7 @@ module BachelorsDegreeProjectApi
     #
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
-
+    routes.default_url_options = { host: 'localhost:3000' }
     config.api_only = true
     config.action_dispatch.rescue_responses.merge!('CanCan::AccessDenied' => :unauthorized)
   end

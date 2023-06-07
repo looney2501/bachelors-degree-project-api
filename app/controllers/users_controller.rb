@@ -6,6 +6,7 @@ class UsersController < ApplicationController
 
   def update
     @user.update(user_params)
+    @user.avatar.attach(params[:avatar])
 
     render json: { user: serialize(@user, serializer: UserSerializer) }, status: :ok
   end
@@ -13,6 +14,6 @@ class UsersController < ApplicationController
   private
 
   def user_params
-    params.require(:user).permit(:first_name, :last_name, :role, :phone_number)
+    params.permit(:first_name, :last_name, :role, :phone_number)
   end
 end

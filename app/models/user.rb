@@ -9,6 +9,7 @@ class User < ActiveRecord::Base
   include DeviseTokenAuth::Concerns::User
 
   has_many :vacation_requests, dependent: :destroy
+  has_one_attached :avatar
 
   def as_json(options = {})
     super(options).merge({ type: type })

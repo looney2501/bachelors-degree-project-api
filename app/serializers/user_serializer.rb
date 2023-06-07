@@ -1,7 +1,14 @@
 # frozen_string_literal: true
 
 class UserSerializer < RootSerializer
-  attributes :id, :first_name, :last_name, :role, :phone_number, :type, :email
+  include Rails.application.routes.url_helpers
+  include ActiveStorage::Blob::Analyzable
+
+  attributes :id, :first_name, :last_name, :role, :phone_number, :type, :email, :avatar
+
+  def avatar
+    rails_blob_url(object.avatar, only_path: true) if object.avatar.attached?
+  end
 end
 
 # == Schema Information
