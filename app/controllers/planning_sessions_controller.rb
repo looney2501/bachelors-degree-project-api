@@ -21,7 +21,7 @@ class PlanningSessionsController < ApplicationController
       @planning_session = PlanningSession.find_by(year: params[:year])
       if @planning_session
         if current_user.type == 'Employee'
-          render json: { planning_session: serialize(@planning_session, serializer: PlanningSessionAllVacationsSerializer, serializer_options: { user_id: current_user.id }) }, status: :ok
+          render json: { planning_session: serialize(@planning_session, serializer: PlanningSessionEmployeeVacationSerializer, serializer_options: { user_id: current_user.id }) }, status: :ok
         else
           render json: { planning_session: serialize(@planning_session, serializer: PlanningSessionAllVacationsSerializer) }, status: :ok
         end
