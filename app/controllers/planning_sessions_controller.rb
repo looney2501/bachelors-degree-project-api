@@ -51,6 +51,7 @@ class PlanningSessionsController < ApplicationController
     @vacation_requests = @planning_session.vacation_requests
     @requests_queue = PriorityQueue.new
     @all_free_days = @planning_session.nonoverlapping_free_days.pluck(:date)
+    @restriction_days = @planning_session.restriction_days
 
     @solution = []
 
@@ -83,15 +84,13 @@ class PlanningSessionsController < ApplicationController
   end
 
   def create_vacations_schedule
-    restriction_intervals_days = @planning_session.restriction_days - @all_free_days
-
     until @requests_queue.empty?
       request = @requests_queue.pop
 
       vacation = Vacation.new(planning_session_id: @planning_session.id, user_id: request.user_id)
-      requested_days = request.requested_days - @all_free_days
 
-
+      unconstrained_requested_days = (request.requested_days - @all_free_days) - @restriction_days
+      vacation.prepared_free_days.concat(unconstrained_requested_days)
 
       @solution << vacation
     end
