@@ -51,7 +51,6 @@ class PlanningSessionsController < ApplicationController
     @vacation_requests = @planning_session.vacation_requests
     @requests_queue = PriorityQueue.new
     @all_free_days = @planning_session.nonoverlapping_free_days.pluck(:date)
-    @restriction_days = @planning_session.restriction_days
 
     @solution = []
 
@@ -84,13 +83,45 @@ class PlanningSessionsController < ApplicationController
   end
 
   def create_vacations_schedule
+    restriction_intervals_days = @planning_session.restriction_days
+    restriction_days = restriction_intervals_days.reduce([]) do |arr, ri|
+      arr.concat(ri[:days])
+    end
+
     until @requests_queue.empty?
       request = @requests_queue.pop
-
+      plannable_request_days_intervals = request.requested_days
       vacation = Vacation.new(planning_session_id: @planning_session.id, user_id: request.user_id)
 
-      unconstrained_requested_days = (request.requested_days - @all_free_days) - @restriction_days
-      vacation.prepared_free_days.concat(unconstrained_requested_days)
+      plannable_request_days_intervals.each do |request_interval|
+        ## Avoid weekends and national free days
+        request_interval[:days] -= @all_free_days
+
+        ## Add unconstrained requested days
+        unmatching_days = request_interval[:days] - restriction_days
+        vacation.prepared_free_days.concat(unmatching_days)
+
+        request_interval[:days] -= unmatching_days
+      end
+
+      ## Add constrained requests if restriction interval permits
+      restriction_intervals_days.each do |restriction_interval|
+        next if (restriction_interval[:available_plannings]).zero?
+
+        plannable_request_days_intervals.each do |request_interval|
+          matching_days = request_interval[:days] & restriction_interval[:days]
+
+          vacation.prepared_free_days.concat(matching_days)
+          request_interval[:days] -= matching_days
+        end
+
+        restriction_interval[:available_plannings] -= 1
+      end
+
+      # ## Shift constrained requests if restriction interval no longer permits
+      # plannable_request_days.each do |_day|
+      #   next_available_day
+      # end
 
       @solution << vacation
     end
@@ -151,6 +182,8 @@ class PlanningSessionsController < ApplicationController
   # end
 
   def analyse_solution; end
+
+  def next_available_day; end
 
   def planning_session_params
     params.require(:planning_session).permit(:year, :available_free_days)

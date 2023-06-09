@@ -21,7 +21,10 @@ class VacationRequest < ApplicationRecord
   def requested_days
     requested_days = []
     requested_intervals.each do |requested_interval|
-      requested_days.concat((requested_interval.start_date..requested_interval.end_date).to_a)
+      requested_days << {
+        days: (requested_interval.start_date..requested_interval.end_date).to_a,
+        importance_level: requested_interval.importance_level
+      }
     end
     requested_days
   end

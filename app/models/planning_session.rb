@@ -26,7 +26,10 @@ class PlanningSession < ApplicationRecord
   def restriction_days
     restriction_days = []
     restriction_intervals.each do |restriction_interval|
-      restriction_days.concat((restriction_interval.start_date..restriction_interval.end_date).to_a)
+      restriction_days << {
+        days: (restriction_interval.start_date..restriction_interval.end_date).to_a,
+        available_plannings: restriction_interval.available_overlapping_plannings
+      }
     end
     restriction_days
   end
