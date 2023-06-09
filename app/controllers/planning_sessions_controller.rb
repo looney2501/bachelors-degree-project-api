@@ -52,7 +52,7 @@ class PlanningSessionsController < ApplicationController
     @requests_queue = PriorityQueue.new
     @all_free_days = @planning_session.nonoverlapping_free_days.pluck(:date)
 
-    @solution = []
+    @solution = { vacations: [], score: 0 }
 
     # loop do
     #   create_vacations_schedule
@@ -66,7 +66,7 @@ class PlanningSessionsController < ApplicationController
 
     create_vacations_schedule
 
-    @solution.each(&:save)
+    @solution[:vacations].each(&:save)
 
     render json: { planning_session: serialize(@planning_session, serializer: PlanningSessionAllVacationsSerializer) }, status: :ok
   end
@@ -113,18 +113,42 @@ class PlanningSessionsController < ApplicationController
 
           vacation.prepared_free_days.concat(matching_days)
           request_interval[:days] -= matching_days
+          restriction_interval[:available_plannings] -= 1 if matching_days.present?
         end
-
-        restriction_interval[:available_plannings] -= 1
       end
 
-      # ## Shift constrained requests if restriction interval no longer permits
-      # plannable_request_days.each do |_day|
-      #   next_available_day
-      # end
+      ## Shift constrained requests if restriction interval no longer permits
+      score = 0
+      plannable_request_days_intervals.each do |request_interval|
+        request_interval[:days].each do |day|
+          planned_day = day
+          found = false
+          until found
+            planned_day += 1
+            planned_day = planned_day.prev_year if planned_day.year != day.year
 
-      @solution << vacation
+            next if @all_free_days.include?(planned_day) || vacation.prepared_free_days.include?(planned_day)
+
+            containing_restriction_interval = restriction_intervals_days.find do |_restriction_interval|
+              request_interval[:days].include?(planned_day)
+            end
+
+            next if containing_restriction_interval.present? && containing_restriction_interval[:available_plannings].zero?
+
+            found = true
+            containing_restriction_interval[:available_plannings] -= 1 if containing_restriction_interval.present?
+          end
+          vacation.prepared_free_days << planned_day
+
+          score += (planned_day - day).to_i.abs * request_interval[:importance_level]
+        end
+      end
+      vacation.score = score
+
+      @solution[:vacations] << vacation
     end
+
+    @solution[:score] = @solution[:vacations].reduce(1) { |s, v| s + v.score }
   end
 
   # def create_vacations_schedule

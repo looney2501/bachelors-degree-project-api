@@ -8,7 +8,7 @@ class Vacation < ApplicationRecord
 
   after_save :save_prepared_free_days
 
-  attr_accessor :prepared_free_days
+  attr_accessor :prepared_free_days, :score
 
   def initialize(attributes = {}, _options = {})
     super(attributes)
