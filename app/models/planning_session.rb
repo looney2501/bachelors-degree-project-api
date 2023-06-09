@@ -22,6 +22,14 @@ class PlanningSession < ApplicationRecord
     total_free_days = nonoverlapping_free_days(start_date, end_date).count
     total_days_number - total_free_days
   end
+
+  def restriction_days
+    restriction_days = []
+    restriction_intervals.each do |restriction_interval|
+      restriction_days.concat((restriction_interval.start_date..restriction_interval.end_date).to_a)
+    end
+    restriction_days
+  end
 end
 
 # == Schema Information

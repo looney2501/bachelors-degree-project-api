@@ -2,6 +2,11 @@
 
 class RequestedInterval < Interval
   belongs_to :vacation_request
+  delegate :planning_session, to: :vacation_request
+
+  def count_days_not_free
+    planning_session.count_days_not_free(start_date, end_date)
+  end
 end
 
 # == Schema Information

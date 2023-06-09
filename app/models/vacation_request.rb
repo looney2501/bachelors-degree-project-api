@@ -12,10 +12,18 @@ class VacationRequest < ApplicationRecord
 
   def initial_score
     requested_intervals.reduce(1) do |total_score, requested_interval|
-      interval_score = requested_interval.importance_level * planning_session.count_days_not_free(requested_interval.start_date, requested_interval.end_date)
+      interval_score = requested_interval.importance_level * requested_interval.count_days_not_free
 
       total_score + interval_score
     end
+  end
+
+  def requested_days
+    requested_days = []
+    requested_intervals.each do |requested_interval|
+      requested_days.concat((requested_interval.start_date..requested_interval.end_date).to_a)
+    end
+    requested_days
   end
 end
 

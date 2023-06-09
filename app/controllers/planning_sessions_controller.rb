@@ -83,13 +83,16 @@ class PlanningSessionsController < ApplicationController
   end
 
   def create_vacations_schedule
+    restriction_intervals_days = @planning_session.restriction_days - @all_free_days
+
     until @requests_queue.empty?
       request = @requests_queue.pop
 
       vacation = Vacation.new(planning_session_id: @planning_session.id, user_id: request.user_id)
-      request.requested_intervals.each do |requested_interval|
-        vacation.prepared_free_days.concat((requested_interval.start_date..requested_interval.end_date).to_a - @all_free_days)
-      end
+      requested_days = request.requested_days - @all_free_days
+
+
+
       @solution << vacation
     end
   end
