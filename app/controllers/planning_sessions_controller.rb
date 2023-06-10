@@ -48,25 +48,35 @@ class PlanningSessionsController < ApplicationController
 
   def generate_vacations_schedule
     @planning_session = PlanningSession.find(params[:id])
-    @vacation_requests = @planning_session.vacation_requests
+    @vacation_requests = @planning_session.vacation_requests.to_a
     @requests_queue = PriorityQueue.new
     @all_free_days = @planning_session.nonoverlapping_free_days.pluck(:date)
+    @all_solutions = []
 
-    @solution = { vacations: [], score: 0 }
+    loop do
+      prioritise_requests
+      create_vacations_schedule
+      analyse_solution
 
-    # loop do
-    #   create_vacations_schedule
-    #
-    #   analyse_solution
-    #
-    #   prioritise_requests
-    # end
+      current_solution_order = @current_solution[:vacations].map(&:user_id)
+      all_solutions_order = []
+      @all_solutions.each do |solution|
+        all_solutions_order << solution[:vacations].map(&:user_id)
+      end
 
-    prioritise_requests
+      break if @current_solution[:score].zero?
 
-    create_vacations_schedule
+      if current_solution_order.in?(all_solutions_order)
+        best_solution = @all_solutions.min_by { |solution| solution[:score] }
+        @current_solution = best_solution
 
-    @solution[:vacations].each(&:save)
+        break
+      end
+
+      @all_solutions << @current_solution
+    end
+
+    @current_solution[:vacations].each(&:save)
 
     render json: { planning_session: serialize(@planning_session, serializer: PlanningSessionAllVacationsSerializer) }, status: :ok
   end
@@ -83,6 +93,8 @@ class PlanningSessionsController < ApplicationController
   end
 
   def create_vacations_schedule
+    @current_solution = { vacations: [], score: 0 }
+
     restriction_intervals_days = @planning_session.restriction_days
     restriction_days = restriction_intervals_days.reduce([]) do |arr, ri|
       arr.concat(ri[:days])
@@ -145,10 +157,18 @@ class PlanningSessionsController < ApplicationController
       end
       vacation.score = score
 
-      @solution[:vacations] << vacation
+      @current_solution[:vacations] << vacation
     end
+  end
 
-    @solution[:score] = @solution[:vacations].reduce(1) { |s, v| s + v.score }
+  def analyse_solution
+    total_score = 0
+    @current_solution[:vacations].each do |vacation|
+      total_score += vacation.score
+      request = @vacation_requests.find { |request| request.user_id == vacation.user_id }
+      request.score = vacation.score
+    end
+    @current_solution[:score] = total_score
   end
 
   # def create_vacations_schedule
@@ -204,8 +224,6 @@ class PlanningSessionsController < ApplicationController
   #     @solution << vacation
   #   end
   # end
-
-  def analyse_solution; end
 
   def next_available_day; end
 
