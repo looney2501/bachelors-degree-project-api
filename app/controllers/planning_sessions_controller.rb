@@ -157,6 +157,45 @@ class PlanningSessionsController < ApplicationController
       end
       vacation.score = score
 
+      ## Add remaining days
+      remaining_days_no = @planning_session.available_free_days - vacation.prepared_free_days.length
+      total_free_days_no = @all_free_days.count + @planning_session.available_free_days
+      free_days_per_month = total_free_days_no / 12
+      free_days_per_month += 1 if (total_free_days_no % 12).positive?
+
+      ## Add remaining days in order to keep the months balanced
+      12.times do |month|
+        planned_days = vacation.prepared_free_days.filter { |day| day.month == month + 1 }
+        default_free_days = @all_free_days.filter { |day| day.month == month + 1 }
+        remaining_plannable_days_no = free_days_per_month - (planned_days.count + default_free_days.count)
+        month_changed = false
+
+        date = Date.new(@planning_session.year, month + 1, 1)
+        while !month_changed && remaining_plannable_days_no.positive? && remaining_days_no.positive?
+          already_planned = planned_days.include?(date) || default_free_days.include?(date)
+
+          restriction_interval_unavailable = restriction_intervals_days.find do |ri|
+            ri[:available_plannings].zero? && ri[:days].include?(date)
+          end
+
+          unless already_planned || restriction_interval_unavailable
+            vacation.prepared_free_days << date
+
+            containing_restriction_interval = restriction_intervals_days.find do |ri|
+              ri[:days].include?(date)
+            end
+            containing_restriction_interval[:available_plannings] -= 1 if containing_restriction_interval.present?
+            remaining_plannable_days_no -= 1
+            remaining_days_no -= 1
+          end
+
+          date = date.next
+          month_changed = true if date.month != month + 1
+        end
+
+        break if remaining_days_no.zero?
+      end
+
       @current_solution[:vacations] << vacation
     end
   end
@@ -224,8 +263,6 @@ class PlanningSessionsController < ApplicationController
   #     @solution << vacation
   #   end
   # end
-
-  def next_available_day; end
 
   def planning_session_params
     params.require(:planning_session).permit(:year, :available_free_days)
