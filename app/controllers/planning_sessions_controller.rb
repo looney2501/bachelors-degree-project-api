@@ -81,6 +81,21 @@ class PlanningSessionsController < ApplicationController
     render json: { planning_session: serialize(@planning_session, serializer: PlanningSessionAllVacationsSerializer) }, status: :ok
   end
 
+  def update_planned_free_days
+    vacation = Vacation.find_by(user_id: params['user_id'], planning_session_id: params['planning_session_id'])
+
+    new_days = params['free_days']
+    old_days = vacation.planned_free_days.pluck(:date)
+
+    days_to_remove = old_days - new_days
+    vacation.planned_free_days.where(date: days_to_remove).destroy_all
+
+    days_to_add = new_days - old_days
+    days_to_add.each { |date| vacation.free_days.create(date: date, free_day_type: :planned) }
+
+    render json: { planning_session: serialize(vacation.planning_session, serializer: PlanningSessionEmployeeVacationSerializer, serializer_options: { user_id: current_user.id }) }, status: :ok
+  end
+
   private
 
   def prioritise_requests
@@ -209,60 +224,6 @@ class PlanningSessionsController < ApplicationController
     end
     @current_solution[:score] = total_score
   end
-
-  # def create_vacations_schedule
-  #   year = @planning_session.year
-  #
-  #   until @requests_queue.empty?
-  #     request = @requests_queue.pop
-  #
-  #     vacation = Vacation.create!(planning_session_id: request.planning_session_id, user_id: request.user_id)
-  #     vacation_free_days = []
-  #
-  #     default_free_days = @planning_session.nonoverlapping_free_days
-  #     total_free_days_no = default_free_days.length + @planning_session.available_free_days
-  #     days_per_month = total_free_days_no / 12
-  #
-  #     # Add free days for every month
-  #     12.times do |month_no|
-  #       default_free_days_month = default_free_days.select { |dfd| dfd.date.month == month_no + 1 }
-  #
-  #       # Add default free days (national + weekend)
-  #       vacation_free_days.concat(default_free_days_month.map do |dfd|
-  #         FreeDay.new(date: dfd.date, free_day_type: dfd.free_day_type, free_days_container_type: 'Vacation', free_days_container_id: vacation.id)
-  #       end)
-  #       # Add rest of days
-  #       remaining_days = days_per_month - default_free_days_month.length
-  #       current_date = Date.new(year, month_no + 1, 1)
-  #
-  #       while remaining_days.positive?
-  #         unless default_free_days_month.any? { |dfd| dfd.date == current_date }
-  #           vacation_free_days << FreeDay.new(date: current_date, free_day_type: 'planned', free_days_container_type: 'Vacation', free_days_container_id: vacation.id)
-  #           remaining_days -= 1
-  #         end
-  #         current_date = current_date.next_day
-  #       end
-  #     end
-  #
-  #     remaining_days_per_month = total_free_days_no - vacation_free_days.count
-  #
-  #     # Add remaining free days
-  #     12.times do |month_no|
-  #       break unless remaining_days_per_month.positive?
-  #
-  #       current_date = Date.new(year, month_no + 1, 1)
-  #
-  #       current_date = current_date.next_day while vacation_free_days.any? { |fd| fd.date == current_date }
-  #
-  #       vacation_free_days << FreeDay.new(date: current_date, free_day_type: 'planned', free_days_container_type: 'Vacation', free_days_container_id: vacation.id)
-  #       remaining_days_per_month -= 1
-  #     end
-  #
-  #     vacation_free_days.each(&:save)
-  #
-  #     @solution << vacation
-  #   end
-  # end
 
   def planning_session_params
     params.require(:planning_session).permit(:year, :available_free_days)

@@ -8,7 +8,7 @@ class Ability
 
     can :manage, User
     can :manage, VacationRequest
-    can :read, PlanningSession
+    can %i[read update_planned_free_days], PlanningSession
 
     return unless user.type == 'Manager'
 
