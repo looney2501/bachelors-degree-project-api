@@ -28,7 +28,8 @@ class PlanningSession < ApplicationRecord
     restriction_intervals.each do |restriction_interval|
       restriction_days << {
         days: (restriction_interval.start_date..restriction_interval.end_date).to_a,
-        available_plannings: restriction_interval.available_overlapping_plannings
+        available_plannings: restriction_interval.available_overlapping_plannings,
+        users_ids: []
       }
     end
     restriction_days

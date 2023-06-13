@@ -117,10 +117,11 @@ class PlanningSessionsController < ApplicationController
 
     until @requests_queue.empty?
       request = @requests_queue.pop
-      plannable_request_days_intervals = request.requested_days
+      user_id = request.user_id
+      requested_days_intervals = request.requested_days
       vacation = Vacation.new(planning_session_id: @planning_session.id, user_id: request.user_id)
 
-      plannable_request_days_intervals.each do |request_interval|
+      requested_days_intervals.each do |request_interval|
         ## Avoid weekends and national free days
         request_interval[:days] -= @all_free_days
 
@@ -133,22 +134,28 @@ class PlanningSessionsController < ApplicationController
 
       ## Add constrained requests if restriction interval permits
       restriction_intervals_days.each do |restriction_interval|
-        next if (restriction_interval[:available_plannings]).zero?
+        includes_user = restriction_interval[:users_ids].include?(user_id)
 
-        plannable_request_days_intervals.each do |request_interval|
+        next if restriction_interval[:available_plannings].zero? && !includes_user
+
+        requested_days_intervals.each do |request_interval|
           matching_days = request_interval[:days] & restriction_interval[:days]
 
           vacation.prepared_free_days.concat(matching_days)
           request_interval[:days] -= matching_days
-          restriction_interval[:available_plannings] -= 1 if matching_days.present?
+
+          if matching_days.present? && !includes_user
+            restriction_interval[:available_plannings] -= 1
+            restriction_interval[:users_ids] << user_id
+          end
         end
       end
 
       ## Shift constrained requests if restriction interval no longer permits
       score = 0
-      plannable_request_days_intervals.each do |request_interval|
+      requested_days_intervals.each do |request_interval|
         request_interval[:days].each do |day|
-          planned_day = day
+          planned_day = day - 1
           found = false
           until found
             planned_day += 1
@@ -156,14 +163,19 @@ class PlanningSessionsController < ApplicationController
 
             next if @all_free_days.include?(planned_day) || vacation.prepared_free_days.include?(planned_day)
 
-            containing_restriction_interval = restriction_intervals_days.find do |_restriction_interval|
-              request_interval[:days].include?(planned_day)
+            containing_restriction_interval = restriction_intervals_days.find do |restriction_interval|
+              restriction_interval[:days].include?(planned_day)
             end
 
-            next if containing_restriction_interval.present? && containing_restriction_interval[:available_plannings].zero?
+            includes_user = containing_restriction_interval.present? && containing_restriction_interval[:users_ids]&.include?(user_id)
+            next if containing_restriction_interval.present? && containing_restriction_interval[:available_plannings].zero? && !includes_user
 
             found = true
-            containing_restriction_interval[:available_plannings] -= 1 if containing_restriction_interval.present?
+
+            if containing_restriction_interval.present? && !includes_user
+              containing_restriction_interval[:available_plannings] -= 1
+              containing_restriction_interval[:users_ids] << user_id
+            end
           end
           vacation.prepared_free_days << planned_day
 
@@ -177,34 +189,37 @@ class PlanningSessionsController < ApplicationController
       total_free_days_no = @all_free_days.count + @planning_session.available_free_days
       free_days_per_month = total_free_days_no / 12
       free_days_per_month += 1 if (total_free_days_no % 12).positive?
+      remaining_plannable_days_no = 0
 
       ## Add remaining days in order to keep the months balanced
       12.times do |month|
         planned_days = vacation.prepared_free_days.filter { |day| day.month == month + 1 }
         default_free_days = @all_free_days.filter { |day| day.month == month + 1 }
-        remaining_plannable_days_no = free_days_per_month - (planned_days.count + default_free_days.count)
+        remaining_plannable_days_no = free_days_per_month + remaining_plannable_days_no - (planned_days.count + default_free_days.count)
         month_changed = false
 
         date = Date.new(@planning_session.year, month + 1, 1)
         while !month_changed && remaining_plannable_days_no.positive? && remaining_days_no.positive?
           already_planned = planned_days.include?(date) || default_free_days.include?(date)
 
-          restriction_interval_unavailable = restriction_intervals_days.find do |ri|
-            ri[:available_plannings].zero? && ri[:days].include?(date)
+          containing_restriction_interval = restriction_intervals_days.find do |restriction_interval|
+            restriction_interval[:days].include?(date)
           end
 
-          unless already_planned || restriction_interval_unavailable
-            vacation.prepared_free_days << date
+          includes_user = containing_restriction_interval.present? && containing_restriction_interval[:users_ids].include?(user_id)
 
-            containing_restriction_interval = restriction_intervals_days.find do |ri|
-              ri[:days].include?(date)
-            end
-            containing_restriction_interval[:available_plannings] -= 1 if containing_restriction_interval.present?
+          unless already_planned || (containing_restriction_interval.present? && containing_restriction_interval[:available_plannings].zero? && !includes_user)
+            vacation.prepared_free_days << date
             remaining_plannable_days_no -= 1
             remaining_days_no -= 1
+
+            if containing_restriction_interval.present? && !includes_user
+              containing_restriction_interval[:available_plannings] -= 1
+              containing_restriction_interval[:users_ids] << user_id
+            end
           end
 
-          date = date.next
+          date += 1
           month_changed = true if date.month != month + 1
         end
 
