@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class RestrictionIntervalSerializer < RootSerializer
-  attributes :start_date, :end_date, :available_overlapping_plannings
+  attributes :id, :start_date, :end_date, :available_overlapping_plannings
 end
 
 # == Schema Information

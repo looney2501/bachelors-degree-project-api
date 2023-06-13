@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class UserThinSerializer < RootSerializer
-  attributes :first_name, :last_name
+  attributes :id, :first_name, :last_name
 end
 
 # == Schema Information
